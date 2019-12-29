@@ -1,0 +1,47 @@
+(ns k8s
+  (:require [joker.http :as http]
+            [joker.json :as json]
+            [util :refer [print-table]]))
+
+;; pods
+(def pods (-> (http/send {:url "http://localhost:8080/api/v1/namespaces/default/pods"})
+              :body
+              (json/read-string {:keywords? true})
+              :items))
+
+
+(->> pods
+     (map (fn [pod]
+            {:name (get-in pod [:metadata :name])
+             :status (get-in pod [:status :phase])}))
+     print-table)
+
+;; services
+(def services (-> (http/send {:url "http://localhost:8080/api/v1/namespaces/default/services"})
+                  :body
+                  (json/read-string {:keywords? true})
+                  :items))
+
+(->> services
+     (map (fn [svc]
+            {:name (get-in svc [:metadata :name])
+             :type (get-in svc [:spec :type])
+             :clusterIP (get-in svc [:spec :clusterIP])}))
+     print-table)
+
+;; configmaps
+(def configmaps (-> (http/send {:url "http://localhost:8080/api/v1/namespaces/default/configmaps"})
+                    :body
+                    (json/read-string {:keywords? true})
+                    :items))
+
+(->> configmaps
+     (map (fn [cfg]
+            {:name (get-in cfg [:metadata :name])}))
+     print-table)
+
+(def frb-cfg (-> (http/send {:url "http://localhost:8080/api/v1/namespaces/default/configmaps/authz-frb-gw-cfg"})
+                 :body
+                 (json/read-string {:keywords? true})))
+
+(pprint (:data frb-cfg))
