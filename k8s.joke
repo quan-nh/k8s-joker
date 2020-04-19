@@ -1,7 +1,9 @@
+#!/usr/bin/env joker
+
 (ns k8s
   (:require [joker.http :as http]
             [joker.json :as json]
-            [util :refer [print-table]]))
+            [joker.pprint :refer [print-table]]))
 
 ;; pods
 (def pods (-> (http/send {:url "http://localhost:8080/api/v1/namespaces/default/pods"})
@@ -9,7 +11,7 @@
               (json/read-string {:keywords? true})
               :items))
 
-
+(println "pods")
 (->> pods
      (map (fn [pod]
             {:name (get-in pod [:metadata :name])
@@ -22,6 +24,8 @@
                   (json/read-string {:keywords? true})
                   :items))
 
+(println "---")
+(println "services")
 (->> services
      (map (fn [svc]
             {:name (get-in svc [:metadata :name])
@@ -34,7 +38,8 @@
                     :body
                     (json/read-string {:keywords? true})
                     :items))
-
+(println "---")
+(println "configmaps")
 (->> configmaps
      (map (fn [cfg]
             {:name (get-in cfg [:metadata :name])}))
